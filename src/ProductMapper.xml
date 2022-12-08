@@ -22,8 +22,7 @@
 
     <update id='updateProduct' parameterType='Product'>
         UPDATE products
-        SET id = #{id},
-            Name  = #{name},
+        SET Name  = #{name},
             Price  = #{price},
             Description = #{description},
             Image_Path = #{imagePath},

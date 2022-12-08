@@ -7,22 +7,23 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import javax.print.Doc;
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 public class PriceGrabber {
     private static final String PROGRAM_NAME = "PriceGrabber";
     private static final String IMAGES_FOLDER = "images";
     private static final HelpFormatter FORMATTER = new HelpFormatter();
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy г.");
+    private static final List<String> LINKS_TO_PROCESS = new LinkedList<>();
     private static final HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
 
     public static void main(String[] args) throws Exception {
@@ -41,6 +42,8 @@ public class PriceGrabber {
             return;
         }
 
+        LINKS_TO_PROCESS.add(cmd.getOptionValue("url"));
+
         ProductDao dao;
         Properties props = new Properties();
         props.load(Resources.getResourceAsReader("properties.properties"));
@@ -50,9 +53,25 @@ public class PriceGrabber {
             dao = new ProductDao(sessionFactory);
         }
 
-        Document productDoc = getDoc(cmd.getOptionValue("url"));
-        Product product = scrapeProduct(productDoc);
-        dao.insertProduct(product);
+        while (LINKS_TO_PROCESS.size() != 0) {
+            Document page = getDoc(LINKS_TO_PROCESS.remove(0));
+            if (page.getElementsByAttributeValue("data-cy", "seller_card").size() != 0) {
+                Product product = scrapeProduct(page);
+                Product existing = dao.getProduct(product.id);
+                if (existing != null) {
+                    if (existing.price != product.price)
+                        System.out.println("The price for " + existing.name + " has changed!\n" + "The old price was: " + existing.price + "\nThe new price is: " + product.price);
+                    if (existing.available && !product.available)
+                        System.out.println("Product: " + existing.name + " has become unavailable");
+                    dao.updateProduct(product);
+                    continue;
+                }
+                System.out.println("New product was added in the database! ProductId: " + product.id);
+                dao.insertProduct(product);
+                continue;
+            }
+            getProductListings(page);
+        }
     }
 
     private static Options intializeOptions() {
@@ -66,6 +85,14 @@ public class PriceGrabber {
         HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(link)).build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return Jsoup.parse(response.body(), response.uri().toString());
+    }
+
+    private static void getProductListings(Document doc) {
+        Element listingsBlock = doc.getElementsByAttributeValue("data-testid", "listing-grid").get(0);
+        Elements listings = listingsBlock.getElementsByAttribute("href");
+        for (Element listing : listings) {
+            LINKS_TO_PROCESS.add(listing.attr("abs:href"));
+        }
     }
 
     private static Product scrapeProduct(Document doc) throws IOException, InterruptedException {
