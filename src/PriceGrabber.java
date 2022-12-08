@@ -9,7 +9,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import javax.print.Doc;
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -93,6 +92,10 @@ public class PriceGrabber {
         for (Element listing : listings) {
             LINKS_TO_PROCESS.add(listing.attr("abs:href"));
         }
+
+        Elements element = doc.getElementsByAttributeValue("data-cy", "pagination-forward");
+        if (element.size() != 0)
+            LINKS_TO_PROCESS.add(element.attr("abs:href"));
     }
 
     private static Product scrapeProduct(Document doc) throws IOException, InterruptedException {
