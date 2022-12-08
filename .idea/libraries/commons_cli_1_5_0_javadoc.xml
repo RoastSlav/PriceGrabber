@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="commons-cli-1.5.0-javadoc">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-commons-cli/commons-cli-1.5.0-tests.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-commons-cli/commons-cli-1.5.0.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-commons-cli/commons-cli-1.5.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-commons-cli/commons-cli-1.5.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-commons-cli/commons-cli-1.5.0-test-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

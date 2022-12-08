@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE mapper PUBLIC '-//mybatis.org//DTD Mapper 3.0//EN'
+        'http://mybatis.org/dtd/mybatis-3-mapper.dtd'>
+
+<mapper namespace='Mappers.ProductMapper'>
+
+    <select id='getProduct' parameterType='int' resultType='Product' resultMap="ProductResult">
+        SELECT *
+        FROM products
+        WHERE id = #{id}
+    </select>
+
+    <select id='getAllProducts' resultMap='ProductResult'>
+        SELECT *
+        FROM products
+    </select>
+
+    <insert id='insertProduct' parameterType='Product' useGeneratedKeys='true' keyProperty='id'>
+        INSERT INTO products(id, Name, Price, Description, Image_Path, Create_Date, Available)
+        VALUES (#{id}, #{name}, #{price}, #{description}, #{imagePath}, #{createDate}, #{available})
+    </insert>
+
+    <update id='updateProduct' parameterType='Product'>
+        UPDATE products
+        SET id = #{id},
+            Name  = #{name},
+            Price  = #{price},
+            Description = #{description},
+            Image_Path = #{imagePath},
+            Create_Date = #{createDate},
+            Available = #{available}
+            WHERE id = #{id}
+    </update>
+
+    <resultMap type='Product' id='ProductResult'>
+        <id property='id' column='id'/>
+        <result property='name' column='Name'/>
+        <result property='price' column='Price'/>
+        <result property='description' column='Description'/>
+        <result property="imagePath" column="Image_Path"/>
+        <result property="createDate" column="Create_Date"/>
+        <result property="available" column="Available"/>
+    </resultMap>
+</mapper>
