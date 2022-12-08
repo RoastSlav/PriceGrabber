@@ -23,6 +23,7 @@ public class PriceGrabber {
     private static final HelpFormatter FORMATTER = new HelpFormatter();
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy г.");
     private static final List<String> LINKS_TO_PROCESS = new LinkedList<>();
+    private static final HashSet<String> PROCESSED_LINKS = new HashSet<>();
     private static final HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
 
     public static void main(String[] args) throws Exception {
@@ -53,8 +54,13 @@ public class PriceGrabber {
         }
 
         while (LINKS_TO_PROCESS.size() != 0) {
-            Document page = getDoc(LINKS_TO_PROCESS.remove(0));
-            if (page.getElementsByAttributeValue("data-cy", "seller_card").size() != 0) {
+            String link = LINKS_TO_PROCESS.remove(0);
+            if (PROCESSED_LINKS.contains(link))
+                continue;
+            PROCESSED_LINKS.add(link);
+
+            Document page = getDoc(link);
+            if (page.location().contains("ad")) {
                 Product product = scrapeProduct(page);
                 Product existing = dao.getProduct(product.id);
                 if (existing != null) {
@@ -123,9 +129,13 @@ public class PriceGrabber {
 
         product.description = doc.getElementsByClass("css-g5mtbi-Text").get(0).text();
 
-        Element element = doc.getElementsByClass("swiper-zoom-container").get(0);
-        String img = element.getElementsByTag("img").get(0).attr("abs:src");
-        product.imagePath = downloadImage(img, product.id);
+        try {
+            Element element = doc.getElementsByClass("swiper-zoom-container").get(0);
+            String img = element.getElementsByTag("img").get(0).attr("abs:src");
+            product.imagePath = downloadImage(img, product.id);
+        } catch (Exception e) {
+            product.imagePath = "";
+        }
 
         product.available = true;
 
