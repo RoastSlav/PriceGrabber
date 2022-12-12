@@ -4,6 +4,8 @@ import org.apache.commons.cli.*;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,6 +27,7 @@ public class PriceGrabber {
     private static final List<String> LINKS_TO_PROCESS = new LinkedList<>();
     private static final HashSet<String> PROCESSED_LINKS = new HashSet<>();
     private static final HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
+    static final Logger logger = Logger.getLogger(PriceGrabber.class);
 
     public static void main(String[] args) throws Exception {
         Options options = intializeOptions();
@@ -83,12 +86,14 @@ public class PriceGrabber {
         Options options = new Options();
         Option url = Option.builder("url").argName("URL").hasArg().required().desc("The url to scrape").build();
         options.addOption(url);
+        logger.log(Level.DEBUG, "Options initialized");
         return options;
     }
 
     private static Document getDoc(String link) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(link)).build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        logger.log(Level.DEBUG, "Got response from " + link);
         return Jsoup.parse(response.body(), response.uri().toString());
     }
 
@@ -96,12 +101,17 @@ public class PriceGrabber {
         Element listingsBlock = doc.getElementsByAttributeValue("data-testid", "listing-grid").get(0);
         Elements listings = listingsBlock.getElementsByAttribute("href");
         for (Element listing : listings) {
-            LINKS_TO_PROCESS.add(listing.attr("abs:href"));
+            String link = listing.attr("abs:href");
+            logger.log(Level.DEBUG, "Found link: " + link);
+            LINKS_TO_PROCESS.add(link);
         }
 
         Elements element = doc.getElementsByAttributeValue("data-cy", "pagination-forward");
-        if (element.size() != 0)
-            LINKS_TO_PROCESS.add(element.attr("abs:href"));
+        if (element.size() != 0) {
+            String link = element.get(0).attr("abs:href");
+            logger.log(Level.DEBUG, "Found next page: " + link);
+            LINKS_TO_PROCESS.add(link);
+        }
     }
 
     private static Product scrapeProduct(Document doc) throws IOException, InterruptedException {
@@ -138,6 +148,7 @@ public class PriceGrabber {
         }
 
         product.available = true;
+        logger.log(Level.INFO, "Scraped product: " + product.name + " with price: " + product.price);
 
         return product;
     }
@@ -157,6 +168,7 @@ public class PriceGrabber {
         } catch (Exception e) {
             System.out.println("Couldn't download image: " + file.getName());
         }
+        logger.log(Level.DEBUG, "Downloaded image: " + file.getName() + " for product: " + productId);
         return fileName;
     }
 
