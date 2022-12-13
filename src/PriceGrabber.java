@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class PriceGrabber {
+    private static final Logger logger = Logger.getLogger(PriceGrabber.class);
     private static final String PROGRAM_NAME = "PriceGrabber";
     private static final String IMAGES_FOLDER = "images";
     private static final HelpFormatter FORMATTER = new HelpFormatter();
@@ -27,7 +28,10 @@ public class PriceGrabber {
     private static final List<String> LINKS_TO_PROCESS = new LinkedList<>();
     private static final HashSet<String> PROCESSED_LINKS = new HashSet<>();
     private static final HttpClient httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
-    static final Logger logger = Logger.getLogger(PriceGrabber.class);
+
+    static {
+        System.setProperty("log4j2.configurationFile", "log4j2.properties");
+    }
 
     public static void main(String[] args) throws Exception {
         Options options = intializeOptions();
@@ -68,13 +72,13 @@ public class PriceGrabber {
                 Product existing = dao.getProduct(product.id);
                 if (existing != null) {
                     if (existing.price != product.price)
-                        System.out.println("The price for " + existing.name + " has changed!\n" + "The old price was: " + existing.price + "\nThe new price is: " + product.price);
+                        logger.log(Level.INFO, String.format("Price changed for product %s: %f -> %f", product.name, existing.price, product.price));
                     if (existing.available && !product.available)
-                        System.out.println("Product: " + existing.name + " has become unavailable");
+                        logger.log(Level.INFO, String.format("Product %s is no longer available", product.name));
                     dao.updateProduct(product);
                     continue;
                 }
-                System.out.println("New product was added in the database! ProductId: " + product.id);
+                logger.log(Level.INFO, "New product was added in the database! ProductId: " + product.id);
                 dao.insertProduct(product);
                 continue;
             }
@@ -126,7 +130,8 @@ public class PriceGrabber {
         int indexOfWhiteSpace = text.indexOf(" ");
         product.price = Double.parseDouble(text.substring(0, indexOfWhiteSpace));
 
-        String id = doc.getElementsByClass("css-9xy3gn-Text eu5v0x0").get(0).text();
+        Element footer = doc.getElementsByAttributeValue("data-cy", "ad-footer-bar-section").get(0);
+        String id = footer.getElementsByTag("span").get(0).text();
         indexOfWhiteSpace = id.indexOf(" ");
         product.id = Integer.parseInt(id.substring(indexOfWhiteSpace + 1));
 
@@ -137,7 +142,8 @@ public class PriceGrabber {
             product.createDate = new Date();
         }
 
-        product.description = doc.getElementsByClass("css-g5mtbi-Text").get(0).text();
+        Element description = doc.getElementsByAttributeValue("data-cy", "ad_description").get(0);
+        product.description = description.getElementsByTag("div").get(0).text();
 
         try {
             Element element = doc.getElementsByClass("swiper-zoom-container").get(0);

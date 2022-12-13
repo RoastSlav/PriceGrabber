@@ -1,0 +1,25 @@
+<component name="libraryTable">
+  <library name="log4j-core-2.19.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-core-2.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-1.2-api-2.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-api-2.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-slf4j-impl-2.19.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/slf4j-log4j13-1.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/slf4j-api-2.0.5.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-core-2.19.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-api-2.19.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-1.2-api-2.19.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-slf4j-impl-2.19.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-1.2-api-2.19.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-core-2.19.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-api-2.19.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/log4j-slf4j-impl-2.19.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Utility/apache-log4j-2.19.0-bin/slf4j-api-2.0.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

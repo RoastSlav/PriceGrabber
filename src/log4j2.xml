@@ -1,0 +1,22 @@
+<Configuration>
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </Console>
+        <File name="FILE" fileName="mylog.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </File>
+        <File name="ERROR_FILE" fileName="error.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="FILE"/>
+            <AppenderRef ref="CONSOLE"/>
+        </Root>
+        <Logger name="com.mypackage" level="error" additivity="false">
+            <AppenderRef ref="ERROR_FILE"/>
+        </Logger>
+    </Loggers>
+</Configuration>
