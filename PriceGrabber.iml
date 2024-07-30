@@ -1,16 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <exclude-output />
-    <content url="file://$MODULE_DIR$">
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$" dumb="true">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
-    <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="commons-cli-1.5.0-javadoc" level="project" />
-    <orderEntry type="library" name="mybatis-3.5.11" level="project" />
-    <orderEntry type="library" name="mysql-connector-j-8.0.31" level="project" />
-    <orderEntry type="library" name="jsoup-1.15.3-sources" level="project" />
-    <orderEntry type="library" name="log4j-core-2.19.0" level="project" />
   </component>
 </module>

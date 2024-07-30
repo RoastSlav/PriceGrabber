@@ -4,8 +4,9 @@ import org.apache.commons.cli.*;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class PriceGrabber {
-    private static final Logger logger = Logger.getLogger(PriceGrabber.class);
+    private static final Logger logger = LogManager.getLogger(PriceGrabber.class);
     private static final String PROGRAM_NAME = "PriceGrabber";
     private static final String IMAGES_FOLDER = "images";
     private static final HelpFormatter FORMATTER = new HelpFormatter();
@@ -62,27 +63,27 @@ public class PriceGrabber {
 
         while (LINKS_TO_PROCESS.size() != 0) {
             String link = LINKS_TO_PROCESS.remove(0);
-            if (PROCESSED_LINKS.contains(link))
-                continue;
+            if (PROCESSED_LINKS.contains(link)) continue;
             PROCESSED_LINKS.add(link);
 
             Document page = getDoc(link);
-            if (page.location().contains("ad")) {
-                Product product = scrapeProduct(page);
-                Product existing = dao.getProduct(product.id);
-                if (existing != null) {
-                    if (existing.price != product.price)
-                        logger.log(Level.INFO, String.format("Price changed for product %s: %f -> %f", product.name, existing.price, product.price));
-                    if (existing.available && !product.available)
-                        logger.log(Level.INFO, String.format("Product %s is no longer available", product.name));
-                    dao.updateProduct(product);
-                    continue;
-                }
-                logger.log(Level.INFO, "New product was added in the database! ProductId: " + product.id);
-                dao.insertProduct(product);
+            if (page.location().contains("ads") || !page.location().contains("ad")) {
+                getProductListings(page);
                 continue;
             }
-            getProductListings(page);
+
+            Product product = scrapeProduct(page);
+            Product existing = dao.getProduct(product.id);
+            if (existing != null) {
+                if (existing.price != product.price)
+                    logger.log(Level.INFO, String.format("Price changed for product %s: %f -> %f", product.name, existing.price, product.price));
+                if (existing.available && !product.available)
+                    logger.log(Level.INFO, String.format("Product %s is no longer available", product.name));
+                dao.updateProduct(product);
+                continue;
+            }
+            logger.log(Level.INFO, "New product was added in the database! ProductId: " + product.id);
+            dao.insertProduct(product);
         }
     }
 
@@ -121,33 +122,33 @@ public class PriceGrabber {
     private static Product scrapeProduct(Document doc) throws IOException, InterruptedException {
         Product product = new Product();
 
-        product.name = doc.getElementsByAttributeValue("data-cy", "ad_title").get(0).text();
+        product.name = doc.getElementsByAttributeValue("data-cy", "ad_title").getFirst().text();
 
-        Element adDescription = doc.getElementsByAttributeValue("data-cy", "ad_description").get(0);
-        product.description = adDescription.getElementsByTag("div").get(0).text();
+        Element adDescription = doc.getElementsByAttributeValue("data-cy", "ad_description").getFirst();
+        product.description = adDescription.getElementsByTag("div").getFirst().text();
 
-        String text = doc.getElementsByAttributeValue("data-testid", "ad-price-container").get(0).text();
+        String text = doc.getElementsByAttributeValue("data-testid", "ad-price-container").getFirst().text();
         int indexOfWhiteSpace = text.indexOf(" ");
         product.price = Double.parseDouble(text.substring(0, indexOfWhiteSpace));
 
-        Element footer = doc.getElementsByAttributeValue("data-cy", "ad-footer-bar-section").get(0);
-        String id = footer.getElementsByTag("span").get(0).text();
+        Element footer = doc.getElementsByAttributeValue("data-cy", "ad-footer-bar-section").getFirst();
+        String id = footer.getElementsByTag("span").getFirst().text();
         indexOfWhiteSpace = id.indexOf(" ");
         product.id = Integer.parseInt(id.substring(indexOfWhiteSpace + 1));
 
-        String dateString = doc.getElementsByAttributeValue("data-cy", "ad-posted-at").get(0).text();
+        String dateString = doc.getElementsByAttributeValue("data-cy", "ad-posted-at").getFirst().text();
         try {
             product.createDate = dateFormat.parse(dateString);
         } catch (Exception e) {
             product.createDate = new Date();
         }
 
-        Element description = doc.getElementsByAttributeValue("data-cy", "ad_description").get(0);
-        product.description = description.getElementsByTag("div").get(0).text();
+        Element description = doc.getElementsByAttributeValue("data-cy", "ad_description").getFirst();
+        product.description = description.getElementsByTag("div").getFirst().text();
 
         try {
-            Element element = doc.getElementsByClass("swiper-zoom-container").get(0);
-            String img = element.getElementsByTag("img").get(0).attr("abs:src");
+            Element element = doc.getElementsByClass("swiper-zoom-container").getFirst();
+            String img = element.getElementsByTag("img").getFirst().attr("abs:src");
             product.imagePath = downloadImage(img, product.id);
         } catch (Exception e) {
             product.imagePath = "";
@@ -184,8 +185,7 @@ public class PriceGrabber {
             String s = contentTypeOptional.get();
             int slashIndex = s.lastIndexOf('/') + 1;
             int endIndex = s.lastIndexOf('+');
-            if (endIndex == -1)
-                endIndex = s.length();
+            if (endIndex == -1) endIndex = s.length();
 
             fileExtension = s.substring(slashIndex, endIndex);
         }
